@@ -1,6 +1,8 @@
 # Easy AI Context
 
-Personal Context Service — an MCP server that lets AI assistants remember you (via a simple hierarchical “path → text” store).
+Personal Context Service — an MCP server that gives you a **centralized personal context for all your AIs**, hosted in your own AWS account with low cost.
+
+> _**Update 2025-02-10:** We’ve implemented the first version of the MCP server and it’s working in ChatGPT. The demo screenshots below are from the live service. Next we'll enable the MCP server for other AIs such as Cursor and OpenClaw._
 
 ## The pain this solves
 
@@ -14,13 +16,11 @@ Easy AI Context gives your assistant a **personal context tree** it can read/wri
 
 ## Demo (ChatGPT)
 
-Below is the typical flow: **get** context, **save** new context, then **continue** later by reloading it.
+With the Personal Context connector, ChatGPT **automatically loads** the context that’s relevant to your question, **saves** new context when you ask (e.g. “remember this”), and can **fetch the same context in any thread** so you don’t re-explain.
 
-> Add the screenshots to `docs/assets/` using the filenames below so the images render on GitHub.
-
-| Read context | Save context | Continue later |
+| ChatGPT loads your relevant context automatically | You save context by asking (“remember this”) | Same context in any thread — fetch and go |
 |---|---|---|
-| [![Read context](docs/assets/Gpt-read-context.png)](docs/assets/Gpt-read-context.png) | [![Save context](docs/assets/Gpt-save-context.png)](docs/assets/Gpt-save-context.png) | [![Continue later](docs/assets/Gpt-continue-context.png)](docs/assets/Gpt-continue-context.png) |
+| <a href="docs/assets/Gpt-read-context.png" target="_blank" rel="noopener noreferrer"><img src="docs/assets/Gpt-read-context.png" alt="ChatGPT loads relevant context" width="280" /></a> | <a href="docs/assets/Gpt-save-context.png" target="_blank" rel="noopener noreferrer"><img src="docs/assets/Gpt-save-context.png" alt="Save context by asking" width="280" /></a> | <a href="docs/assets/Gpt-continue-context.png" target="_blank" rel="noopener noreferrer"><img src="docs/assets/Gpt-continue-context.png" alt="Fetch in another thread" width="280" /></a> |
 
 ## Example context structure
 
