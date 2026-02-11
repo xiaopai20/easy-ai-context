@@ -1,0 +1,34 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+COPY tsconfig.json ./
+COPY services/api/package.json ./services/api/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install dependencies
+RUN npm install
+
+# Copy source code and scripts
+COPY services/api ./services/api
+COPY packages/shared ./packages/shared
+COPY scripts ./scripts
+
+# Build shared package
+WORKDIR /app/packages/shared
+RUN npm run build
+
+# Build API
+WORKDIR /app/services/api
+RUN npm run build
+
+# Expose port
+EXPOSE 3001
+
+# Set working directory
+WORKDIR /app/services/api
+
+# Run local server
+CMD ["npm", "run", "dev"]

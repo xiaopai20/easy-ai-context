@@ -1,0 +1,40 @@
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: context-dynamodb-local
+    ports:
+      - "8010:8000"
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-port", "8000"]
+    volumes:
+      - dynamodb-data:/home/dynamodblocal/data
+
+  init-db:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: context-init-db
+    env_file: .env.dev
+    volumes:
+      - ./scripts:/app/scripts
+    depends_on:
+      - dynamodb-local
+    working_dir: /app
+    command: ["npx", "tsx", "scripts/create-dynamodb-table.ts"]
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: context-api
+    ports:
+      - "3010:3001"
+    env_file: .env.dev
+    depends_on:
+      - init-db
+    volumes:
+      - ./services/api:/app/services/api
+      - ./packages/shared:/app/packages/shared
+
+volumes:
+  dynamodb-data:

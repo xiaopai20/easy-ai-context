@@ -1,0 +1,20 @@
+{
+  "name": "easy-ai-context",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["services/*", "packages/*", "proxy"],
+  "scripts": {
+    "dev": "docker-compose up",
+    "build": "npm run build --workspaces",
+    "type-check": "npm run type-check --workspaces",
+    "deploy:dev": "npm run build && cd infra && npx cdk deploy -c env=dev",
+    "deploy:prod": "npm run build && cd infra && npx cdk deploy -c env=prod -c allowedEmails=\"${ALLOWED_EMAILS}\" -c callbackUrl=\"${CALLBACK_URL}\""
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "aws-lambda": "^1.0.7",
+    "stemmer": "^2.0.1"
+  }
+}

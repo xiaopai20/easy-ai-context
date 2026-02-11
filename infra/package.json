@@ -1,0 +1,23 @@
+{
+  "name": "@context/infra",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node node_modules/typescript/bin/tsc",
+    "cdk": "cdk",
+    "deploy": "cdk deploy",
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "type-check": "node node_modules/typescript/bin/tsc --noEmit"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.100.0",
+    "constructs": "^10.3.0",
+    "dotenv": "^16.4.5",
+    "source-map-support": "^0.5.21"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "aws-cdk": "^2.100.0",
+    "typescript": "^5.3.3"
+  }
+}
