@@ -6,7 +6,7 @@ export async function handleGet(
   args: { path: string }
 ): Promise<{ path: string; content: string }> {
   const path = normalizePath(args.path);
-  console.log(JSON.stringify({ tool: 'context.get', userId, path }));
+  console.log(JSON.stringify({ tool: 'context_get', userId, path }));
 
   const node = await getNode(userId, path);
   if (!node) {

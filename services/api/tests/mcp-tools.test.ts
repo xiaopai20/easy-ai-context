@@ -5,9 +5,9 @@ import { getToolSchemas } from '../src/mcp/router.js';
 describe('getToolSchemas', () => {
   it('returns tools with required MCP annotations (readOnlyHint, openWorldHint, destructiveHint)', () => {
     const tools = getToolSchemas();
-    const readOnlyTools = ['context.list_paths', 'context.get'];
-    const destructiveTools = ['context.delete'];
-    const writeTools = ['context.set'];
+    const readOnlyTools = ['context_list_paths', 'context_get'];
+    const destructiveTools = ['context_delete'];
+    const writeTools = ['context_set'];
 
     for (const t of tools) {
       assert.ok(t.annotations, `${t.name} must have annotations`);
@@ -44,10 +44,10 @@ describe('getToolSchemas', () => {
     const tools = getToolSchemas();
     const names = tools.map((t) => t.name);
     assert.deepStrictEqual(names.sort(), [
-      'context.delete',
-      'context.get',
-      'context.list_paths',
-      'context.set',
+      'context_delete',
+      'context_get',
+      'context_list_paths',
+      'context_set',
     ]);
   });
 });

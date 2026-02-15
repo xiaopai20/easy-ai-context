@@ -27,21 +27,21 @@ async function toolsCall<T>(name: string, args: Record<string, unknown>): Promis
 test('integration: set/get/list_paths/delete flow', async () => {
   const path = 'projects/easy-ai';
 
-  const setRes = await toolsCall<{ ok: true }>('context.set', { path, content: 'hello' });
+  const setRes = await toolsCall<{ ok: true }>('context_set', { path, content: 'hello' });
   assert.equal(setRes.ok, true);
 
-  const getRes1 = await toolsCall<{ path: string; content: string }>('context.get', { path });
+  const getRes1 = await toolsCall<{ path: string; content: string }>('context_get', { path });
   assert.equal(getRes1.path, path);
   assert.equal(getRes1.content, 'hello');
 
-  const listRes = await toolsCall<{ paths: string[] }>('context.list_paths', { prefix: 'projects' });
+  const listRes = await toolsCall<{ paths: string[] }>('context_list_paths', { prefix: 'projects' });
   assert.ok(Array.isArray(listRes.paths));
   assert.ok(listRes.paths.includes(path));
 
-  const delRes = await toolsCall<{ ok: true }>('context.delete', { path });
+  const delRes = await toolsCall<{ ok: true }>('context_delete', { path });
   assert.equal(delRes.ok, true);
 
-  const getRes2 = await toolsCall<{ path: string; content: string }>('context.get', { path });
+  const getRes2 = await toolsCall<{ path: string; content: string }>('context_get', { path });
   assert.equal(getRes2.path, path);
   assert.equal(getRes2.content, '');
 });

@@ -2,7 +2,7 @@
 
 Personal Context Service — an MCP server that gives you a **centralized personal context for all your AIs**, hosted in your own AWS account with low cost.
 
-> _**Update 2025-02-10:** We’ve implemented the first version of the MCP server and it’s working in ChatGPT. The demo screenshots below are from the live service. Next we'll enable the MCP server for other AIs such as Cursor and OpenClaw._
+> _**Update 2025-02-15:** MCP server working in ChatGPT and Cursor (stdio proxy). Demo screenshots below are from the live service._
 
 ## The pain this solves
 
@@ -42,10 +42,10 @@ projects
 
 This repo ships a **Model Context Protocol (MCP)** server with exactly these tools:
 
-- `context.list_paths` → discover what context exists (paths only)
-- `context.get` → read one node (path → content)
-- `context.set` → upsert one node
-- `context.delete` → delete one node (idempotent)
+- `context_list_paths` → discover what context exists (paths only)
+- `context_get` → read one node (path → content)
+- `context_set` → upsert one node
+- `context_delete` → delete one node (idempotent)
 
 Under the hood, each node is a single DynamoDB item keyed by user + path (see `MIGRATION.md` for the table/GSI shape).
 
@@ -70,13 +70,13 @@ Cost drivers: **API Gateway** ~$1/1M requests, **Lambda** ~$0.20/1M requests + c
 
 The intended interaction is **index-first, then targeted reads**:
 
-1) **Fetch the index**: call `context.list_paths({})` to get the list of available paths (treat this as the tree index).
+1) **Fetch the index**: call `context_list_paths({})` to get the list of available paths (treat this as the tree index).
 2) **Pick the smallest relevant prefix** for the current conversation (e.g. `projects/easy-ai`).
-3) **Read parent first**: call `context.get({ path })` for that parent node.
-4) **Drill down only if needed**: if you need details, fetch child nodes with additional `context.get` calls (don’t fetch the whole tree by default).
-5) **Write only on user intent**: if the user asks to save/update context, call `context.set({ path, content })` and update parent roll-ups so summaries stay accurate.
+3) **Read parent first**: call `context_get({ path })` for that parent node.
+4) **Drill down only if needed**: if you need details, fetch child nodes with additional `context_get` calls (don’t fetch the whole tree by default).
+5) **Write only on user intent**: if the user asks to save/update context, call `context_set({ path, content })` and update parent roll-ups so summaries stay accurate.
 
-This keeps tool usage fast and cheap: `list_paths` is the index, and `get` is the selective fetch.
+This keeps tool usage fast and cheap: `context_list_paths` is the index, and `context_get` is the selective fetch.
 
 ## Policy & model guidance
 
@@ -88,7 +88,7 @@ This keeps tool usage fast and cheap: `list_paths` is the index, and `get` is th
 - `QUICKSTART.md` — run locally with Docker
 - `docs/DEPLOY.md` — deploy to AWS (OAuth via Cognito)
 - `docs/mcp-chatgpt-config.md` — ChatGPT connector setup
-- `docs/mcp-cursor-config.md` — Cursor MCP config (not tested yet)
+- `docs/mcp-cursor-config.md` — Cursor MCP config (stdio proxy)
 - `MIGRATION.md` — DynamoDB schema / GSI notes
 - `docs/E2E-TEST-PLAN.md` — end-to-end test plan
 - `docs/PRE-PUBLISH.md` — checklist before making the repo public

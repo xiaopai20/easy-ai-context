@@ -38,10 +38,10 @@
 | File | Purpose |
 |------|---------|
 | `services/api/src/mcp/router.ts` | routeMcpTool, getToolSchemas |
-| `services/api/src/mcp/handlers/list-paths.ts` | context.list_paths |
-| `services/api/src/mcp/handlers/set.ts` | context.set |
-| `services/api/src/mcp/handlers/get.ts` | context.get |
-| `services/api/src/mcp/handlers/delete.ts` | context.delete |
+| `services/api/src/mcp/handlers/list-paths.ts` | context_list_paths |
+| `services/api/src/mcp/handlers/set.ts` | context_set |
+| `services/api/src/mcp/handlers/get.ts` | context_get |
+| `services/api/src/mcp/handlers/delete.ts` | context_delete |
 
 ## 5) Search Ranking MVP
 

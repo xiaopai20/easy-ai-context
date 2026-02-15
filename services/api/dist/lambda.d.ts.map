@@ -1,1 +1,1 @@
-{"version":3,"file":"lambda.d.ts","sourceRoot":"","sources":["../src/lambda.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,sBAAsB,EAAE,uBAAuB,EAAE,MAAM,YAAY,CAAC;AAkBlF,eAAO,MAAM,OAAO,GAAU,OAAO,sBAAsB,KAAG,OAAO,CAAC,uBAAuB,CA6K5F,CAAC"}
+{"version":3,"file":"lambda.d.ts","sourceRoot":"","sources":["../src/lambda.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,sBAAsB,EAAE,uBAAuB,EAAE,MAAM,YAAY,CAAC;AAkBlF,eAAO,MAAM,OAAO,GAAU,OAAO,sBAAsB,KAAG,OAAO,CAAC,uBAAuB,CAqS5F,CAAC"}

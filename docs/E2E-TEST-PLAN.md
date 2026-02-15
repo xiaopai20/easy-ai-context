@@ -75,7 +75,7 @@ curl -s -X POST "$API_URL/mcp" \
 ```
 
 3. Restart Cursor.
-4. In chat, use tools: context.list_paths, context.set, etc.
+4. In chat, use tools: context_list_paths, context_set, etc.
 
 ## 6. Example Data Scripts
 

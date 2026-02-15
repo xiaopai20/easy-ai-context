@@ -30,7 +30,7 @@ async function main() {
   ];
 
   for (const e of entries) {
-    const r = await mcpCall('context.set', e);
+    const r = await mcpCall('context_set', e);
     console.log(`Set: ${e.path} (${JSON.stringify(r)})`);
   }
 }

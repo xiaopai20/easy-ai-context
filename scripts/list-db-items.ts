@@ -35,7 +35,7 @@ async function main() {
   const items = (result.Items || []).map((i) => unmarshall(i));
   console.log(`Table: ${tableName} (${items.length} items)\n`);
   if (items.length === 0) {
-    console.log('No items. Run context.set then context.list_paths via API, or:');
+    console.log('No items. Run context_set then context_list_paths via API, or:');
     console.log('  API_BASE_URL=http://localhost:3010 npx tsx scripts/insert-context.ts');
     return;
   }

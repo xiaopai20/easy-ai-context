@@ -11,7 +11,7 @@ This version stores **context nodes** addressed by a normalized `path` (e.g. `pr
   - **GSI1_SK** (string)
   - **Projection**: **KEYS_ONLY** (or **INCLUDE** only `updated_at`). **Do not project `content`.**
 
-## Item shape written by `context.set`
+## Item shape written by `context_set`
 
 Base item (one item per node):
 

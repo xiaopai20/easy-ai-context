@@ -6,7 +6,7 @@ export async function handleDelete(
   args: { path: string }
 ): Promise<{ ok: true }> {
   const path = normalizePath(args.path);
-  console.log(JSON.stringify({ tool: 'context.delete', userId, path }));
+  console.log(JSON.stringify({ tool: 'context_delete', userId, path }));
 
   // Idempotent: deleting missing node still succeeds.
   await deleteNode(userId, path);

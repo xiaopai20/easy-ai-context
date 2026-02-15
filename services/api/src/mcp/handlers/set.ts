@@ -20,7 +20,7 @@ export async function handleSet(
     throw new Error(validation.error ?? 'Content validation failed');
   }
 
-  console.log(JSON.stringify({ tool: 'context.set', userId, path }));
+  console.log(JSON.stringify({ tool: 'context_set', userId, path }));
 
   await setNode(userId, path, content);
   return { ok: true };

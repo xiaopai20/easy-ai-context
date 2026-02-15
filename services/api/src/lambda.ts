@@ -70,7 +70,7 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
       return json(200, { message: 'Hello World', userId: user.userId });
     }
 
-    // GET /mcp or /mcp/sse - Streamable HTTP: return SSE stream when client requests it (Cursor needs this)
+    // GET /mcp or /mcp/sse - Streamable HTTP (minimal: we respond with SSE format but do not actually stream)
     if ((path === '/mcp' || path === '/mcp/sse') && method === 'GET') {
       const accept = event.headers?.accept || event.headers?.Accept || '';
       if (accept.includes('text/event-stream')) {
@@ -82,8 +82,8 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
         if (!isAllowed(user)) {
           return jsonWithWWWAuth(403, { error: 'Access denied: email not in allowed list' }, 'insufficient_scope');
         }
-        // Minimal SSE: send one event so Cursor can open the stream; Lambda can't hold long connections
-        const sseBody = `data: ${JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} })}\n\n`;
+        // We do not stream: Lambda returns one response body and closes. Body is one SSE comment (no wrong-direction RPC).
+        const sseBody = ': stream open\n\n';
         return {
           statusCode: 200,
           headers: {
@@ -191,11 +191,11 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
   }
 };
 
-function getOAuthChallengeHeaders(errorType: 'invalid_token' | 'insufficient_scope' = 'invalid_token'): Record<string, string> {
+function getOAuthChallengeHeaders(
+  errorType: 'invalid_token' | 'insufficient_scope' = 'invalid_token'
+): Record<string, string> {
   const apiBase = process.env.API_BASE_URL || '';
-  // RFC 9728: resource_metadata so ChatGPT knows to restart OAuth
-  // error= helps OpenAI clients recognize auth failure (per their troubleshooting)
-  const metadataUrl = `${apiBase}/.well-known/oauth-protected-resource`;
+  const metadataUrl = `${apiBase}/.well-known/oauth-protected-resource/mcp`;
   return {
     'WWW-Authenticate': `Bearer realm="mcp", error="${errorType}", resource_metadata="${metadataUrl}", scope="openid email profile"`,
   };

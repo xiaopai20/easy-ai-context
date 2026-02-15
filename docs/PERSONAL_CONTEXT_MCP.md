@@ -14,7 +14,7 @@ There are no structural-only nodes.
 
 1) Always list paths first  
 Before answering any question that may depend on stored context, call:  
-`context.list_paths({})`  
+`context_list_paths({})`  
 Treat the result as the index of the system.
 
 2) Read parent first, then drill down  
@@ -62,7 +62,7 @@ Parents answer:
 9) Treat finance, assets, health, family, projects, decisions as separate domains.  
 Do not mix conceptual domains (e.g., finance under assets).
 
-10) After any structural change, you may show the updated tree using `context.list_paths` if helpful.
+10) After any structural change, you may show the updated tree using `context_list_paths` if helpful.
 
 ## Your goal
 

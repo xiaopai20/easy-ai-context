@@ -24,7 +24,7 @@ if [ -z "$FIRST_TOOL" ]; then
   exit 1
 fi
 
-echo "Sample tool (context.list_paths):"
+echo "Sample tool (context_list_paths):"
 echo "$RESP" | jq '.result.tools[0]'
 echo ""
 

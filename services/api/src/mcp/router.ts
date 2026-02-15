@@ -15,10 +15,10 @@ export interface McpToolResult {
 }
 
 const TOOL_HANDLERS: Record<string, (userId: string, args: Record<string, unknown>) => Promise<unknown>> = {
-  'context.list_paths': async (userId, args) => handleListPaths(userId, args as { prefix?: string }),
-  'context.get': async (userId, args) => handleGet(userId, args as { path: string }),
-  'context.set': async (userId, args) => handleSet(userId, args as { path: string; content: string }),
-  'context.delete': async (userId, args) => handleDelete(userId, args as { path: string }),
+  'context_list_paths': async (userId, args) => handleListPaths(userId, args as { prefix?: string }),
+  'context_get': async (userId, args) => handleGet(userId, args as { path: string }),
+  'context_set': async (userId, args) => handleSet(userId, args as { path: string; content: string }),
+  'context_delete': async (userId, args) => handleDelete(userId, args as { path: string }),
 };
 
 export async function routeMcpTool(
@@ -74,17 +74,17 @@ export function getToolSchemas(): Array<{
 
   return [
     {
-      name: 'context.list_paths',
-      description: 'List context node paths for the current user. Use this first to discover what context exists. If prefix is provided, returns the subtree under that prefix (includes the prefix node itself only if it exists) plus all descendant paths. Note: this returns paths only (no content); call context.get after selecting paths.',
+      name: 'context_list_paths',
+      description: 'List context node paths for the current user. Use this first to discover what context exists. Call with {} or empty args to list all paths. If prefix (or path) is provided, returns the subtree under that path. Note: this returns paths only (no content); call context_get after selecting paths.',
       inputSchema: {
         type: 'object',
-        properties: { prefix: { type: 'string' } },
+        properties: { prefix: { type: 'string' }, path: { type: 'string' } },
       },
       annotations: readOnly,
       ...modelVisible,
     },
     {
-      name: 'context.get',
+      name: 'context_get',
       description: 'Get the saved context content for a single path. Paths are normalized to lowercase and / separators. If the path does not exist, returns empty content.',
       inputSchema: {
         type: 'object',
@@ -97,7 +97,7 @@ export function getToolSchemas(): Array<{
       ...modelVisible,
     },
     {
-      name: 'context.set',
+      name: 'context_set',
       description: 'Create or replace the content at a path (upsert). This overwrites any existing content at that path. Policy: keep nodes small (well under DynamoDB 400KB; recommended <50–100KB). Use children for detail and keep parents as roll-up summaries; when updating a node, also update parent roll-ups.',
       inputSchema: {
         type: 'object',
@@ -111,8 +111,8 @@ export function getToolSchemas(): Array<{
       ...modelVisible,
     },
     {
-      name: 'context.delete',
-      description: 'Delete a context node at a path. This is destructive. Policy: do not delete unless the user explicitly asks; prefer marking content as ARCHIVED via context.set.',
+      name: 'context_delete',
+      description: 'Delete a context node at a path. This is destructive. Policy: do not delete unless the user explicitly asks; prefer marking content as ARCHIVED via context_set.',
       inputSchema: {
         type: 'object',
         properties: { path: { type: 'string' } },

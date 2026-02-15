@@ -27,10 +27,10 @@ Paths use lowercase with '/' separators (e.g. `projects/easy-ai/resume/fe`).
 
 ## Recommended workflow
 
-1) Discover paths using `context.list_paths`.
-2) Read relevant nodes using `context.get`.
+1) Discover paths using `context_list_paths`.
+2) Read relevant nodes using `context_get`.
 3) Answer the user.
-4) If the user asks to save/update context, write with `context.set` and update parent roll-ups accordingly.
+4) If the user asks to save/update context, write with `context_set` and update parent roll-ups accordingly.
 
 ## Model guidance
 

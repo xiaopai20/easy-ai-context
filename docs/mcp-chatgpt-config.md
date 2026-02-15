@@ -1,6 +1,6 @@
 # ChatGPT MCP Connector – Personal Context Service
 
-Add your deployed Context API to ChatGPT so you can use `context.list_paths`, `context.get`, `context.set`, etc. from ChatGPT.
+Add your deployed Context API to ChatGPT so you can use `context_list_paths`, `context_get`, `context_set`, etc. from ChatGPT.
 
 ## Prerequisites
 
