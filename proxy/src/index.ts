@@ -20,6 +20,12 @@ const API_PATH = '/mcp';
 const ACCESS_TOKEN = process.env.CONTEXT_ACCESS_TOKEN || '';
 const TIMEOUT_MS = parseInt(process.env.CONTEXT_TIMEOUT_MS || '30000', 10);
 
+// Startup log (stderr) – helps debug "cannot discover tools" (usually 401 = expired token)
+(function initLog() {
+  const hasToken = Boolean(ACCESS_TOKEN && ACCESS_TOKEN.length > 20);
+  process.stderr.write(`[context-proxy] started api=${API_URL} token=${hasToken ? 'set' : 'MISSING'}\n`);
+})();
+
 // Use a no-op writable for readline so only our JSON-RPC responses go to stdout (MCP reads that)
 const noop = new stream.Writable({ write(_chunk, _enc, cb) { cb(); } });
 const rl = readline.createInterface({ input: process.stdin, output: noop, terminal: false });

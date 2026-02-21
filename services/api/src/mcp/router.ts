@@ -17,7 +17,13 @@ export interface McpToolResult {
 const TOOL_HANDLERS: Record<string, (userId: string, args: Record<string, unknown>) => Promise<unknown>> = {
   'context_list_paths': async (userId, args) => handleListPaths(userId, args as { prefix?: string }),
   'context_get': async (userId, args) => handleGet(userId, args as { path: string }),
-  'context_set': async (userId, args) => handleSet(userId, args as { path: string; content: string }),
+  'context_set': async (userId, args) =>
+    handleSet(userId, args as {
+      path: string;
+      content: string;
+      ifMatchVersion?: string | null;
+      parentSummary?: string;
+    }),
   'context_delete': async (userId, args) => handleDelete(userId, args as { path: string }),
 };
 
@@ -85,7 +91,7 @@ export function getToolSchemas(): Array<{
     },
     {
       name: 'context_get',
-      description: 'Get the saved context content for a single path. Paths are normalized to lowercase and / separators. If the path does not exist, returns empty content.',
+      description: 'Get the saved context content for a single path. Returns path, content, and version (use version as ifMatchVersion when calling context_set to update). Paths are normalized to lowercase and / separators. If the path does not exist, returns content: "" and version: null.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -98,12 +104,14 @@ export function getToolSchemas(): Array<{
     },
     {
       name: 'context_set',
-      description: 'Create or replace the content at a path (upsert). This overwrites any existing content at that path. Policy: keep nodes small (well under DynamoDB 400KB; recommended <50–100KB). Use children for detail and keep parents as roll-up summaries; when updating a node, also update parent roll-ups.',
+      description: 'Create or update a node. Update: require ifMatchVersion from context_get to avoid overwriting concurrent changes; when path has a parent (e.g. "a/b/c"), parentSummary (updated roll-up for the immediate parent) is required and both are written in one transaction. Create: omit ifMatchVersion for new nodes. Policy: keep nodes small; use parentSummary to keep parent roll-ups in sync.',
       inputSchema: {
         type: 'object',
         properties: {
           path: { type: 'string' },
           content: { type: 'string' },
+          ifMatchVersion: { type: 'string', description: 'Version from context_get; required when updating an existing node. Omit or null for create.' },
+          parentSummary: { type: 'string', description: 'Required when path contains "/"; updated roll-up content for the immediate parent path.' },
         },
         required: ['path', 'content'],
       },

@@ -1,11 +1,16 @@
 import {
+  ConditionalCheckFailedException,
   DynamoDBClient,
   DeleteItemCommand,
   GetItemCommand,
   PutItemCommand,
   QueryCommand,
+  TransactWriteItemsCommand,
 } from '@aws-sdk/client-dynamodb';
 import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
+
+export const CONTEXT_CONFLICT = 'CONTEXT_CONFLICT';
+export const CONTEXT_PARENT_REQUIRED = 'CONTEXT_PARENT_REQUIRED';
 
 const client = new DynamoDBClient({
   ...(process.env.DYNAMODB_ENDPOINT && { endpoint: process.env.DYNAMODB_ENDPOINT }),
@@ -83,7 +88,14 @@ export async function listPaths(userId: string, prefix?: string): Promise<string
   return prefixExists.Item ? [prefix, ...paths] : paths;
 }
 
-export async function getNode(userId: string, path: string): Promise<{ path: string; content: string } | null> {
+export interface ContextNode {
+  path: string;
+  content: string;
+  /** ISO timestamp; use as ifMatchVersion when updating. Null when node does not exist. */
+  version: string | null;
+}
+
+export async function getNode(userId: string, path: string): Promise<ContextNode | null> {
   const result = await client.send(
     new GetItemCommand({
       TableName: TABLE_NAME,
@@ -94,32 +106,119 @@ export async function getNode(userId: string, path: string): Promise<{ path: str
 
   if (!result.Item) return null;
   const raw = unmarshall(result.Item) as Record<string, unknown>;
-
+  const updatedAt = raw.updated_at;
   return {
     path,
     content: String(raw.content || ''),
+    version: typeof updatedAt === 'string' ? updatedAt : null,
   };
 }
 
-export async function setNode(userId: string, path: string, content: string): Promise<void> {
-  const nowIso = new Date().toISOString();
+export interface SetNodeOptions {
+  /**
+   * For update: must match current node's version (from context_get).
+   * For create: omit or pass null/empty so the write is create-only.
+   */
+  ifMatchVersion?: string | null;
+  /** Required when path has a parent (contains '/'); updated parent roll-up written in same transaction. */
+  parentSummary?: string;
+}
 
-  await client.send(
-    new PutItemCommand({
-      TableName: TABLE_NAME,
-      Item: marshall(
-        {
-          PK: pk(userId),
-          SK: sk(path),
-          content,
-          updated_at: nowIso,
-          GSI1_PK: gsi1Pk(userId),
-          GSI1_SK: gsi1Sk(path),
-        },
-        { removeUndefinedValues: true }
-      ),
-    })
-  );
+function getParentPath(path: string): string | null {
+  const i = path.lastIndexOf('/');
+  return i < 0 ? null : path.slice(0, i);
+}
+
+export async function setNode(
+  userId: string,
+  path: string,
+  content: string,
+  options?: SetNodeOptions
+): Promise<void> {
+  const nowIso = new Date().toISOString();
+  const parentPath = getParentPath(path);
+  const parentSummary = options?.parentSummary;
+  if (parentPath !== null && (parentSummary === undefined || parentSummary === null)) {
+    throw new Error(
+      `${CONTEXT_PARENT_REQUIRED}: Updating a child path requires parentSummary (updated roll-up for parent "${parentPath}").`
+    );
+  }
+  if (parentPath === null && parentSummary != null) {
+    throw new Error('parentSummary must not be set when path has no parent (root-level path).');
+  }
+
+  const isUpdate = options?.ifMatchVersion != null && String(options.ifMatchVersion).trim() !== '';
+  const childItem = {
+    PK: pk(userId),
+    SK: sk(path),
+    content,
+    updated_at: nowIso,
+    GSI1_PK: gsi1Pk(userId),
+    GSI1_SK: gsi1Sk(path),
+  };
+
+  const runPut = async (): Promise<void> => {
+    if (parentPath != null && parentSummary != null) {
+      const parentItem = {
+        PK: pk(userId),
+        SK: sk(parentPath),
+        content: parentSummary,
+        updated_at: nowIso,
+        GSI1_PK: gsi1Pk(userId),
+        GSI1_SK: gsi1Sk(parentPath),
+      };
+      const childPut = {
+        TableName: TABLE_NAME,
+        Item: marshall(childItem, { removeUndefinedValues: true }),
+        ...(isUpdate
+          ? {
+              ConditionExpression: 'updated_at = :v',
+              ExpressionAttributeValues: marshall({ ':v': options!.ifMatchVersion! }),
+            }
+          : { ConditionExpression: 'attribute_not_exists(SK)' as const }),
+      };
+      await client.send(
+        new TransactWriteItemsCommand({
+          TransactItems: [
+            { Put: childPut },
+            {
+              Put: {
+                TableName: TABLE_NAME,
+                Item: marshall(parentItem, { removeUndefinedValues: true }),
+              },
+            },
+          ],
+        })
+      );
+      return;
+    }
+    await client.send(
+      new PutItemCommand({
+        TableName: TABLE_NAME,
+        Item: marshall(childItem, { removeUndefinedValues: true }),
+        ...(isUpdate
+          ? {
+              ConditionExpression: 'updated_at = :v',
+              ExpressionAttributeValues: marshall({ ':v': options!.ifMatchVersion! }),
+            }
+          : { ConditionExpression: 'attribute_not_exists(SK)' }),
+      })
+    );
+  };
+
+  try {
+    await runPut();
+  } catch (err) {
+    if (err instanceof ConditionalCheckFailedException) {
+      const msg = isUpdate
+        ? 'Node was modified since read or does not exist. Re-read with context_get and use the returned version in context_set.'
+        : 'Node already exists. Use context_get and pass the returned version in context_set to update.';
+      const e = new Error(msg) as Error & { code?: string };
+      e.code = CONTEXT_CONFLICT;
+      throw e;
+    }
+    throw err;
+  }
 }
 
 export async function deleteNode(userId: string, path: string): Promise<void> {

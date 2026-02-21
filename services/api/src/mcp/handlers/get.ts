@@ -4,14 +4,14 @@ import { normalizePath } from '@context/shared';
 export async function handleGet(
   userId: string,
   args: { path: string }
-): Promise<{ path: string; content: string }> {
+): Promise<{ path: string; content: string; version: string | null }> {
   const path = normalizePath(args.path);
   console.log(JSON.stringify({ tool: 'context_get', userId, path }));
 
   const node = await getNode(userId, path);
   if (!node) {
-    return { path, content: '' };
+    return { path, content: '', version: null };
   }
 
-  return node;
+  return { path: node.path, content: node.content, version: node.version };
 }

@@ -10,6 +10,14 @@ Parents contain roll-up summaries.
 Children contain detail.
 There are no structural-only nodes.
 
+## API ENFORCEMENT (required by the server)
+
+- **context_get** returns `path`, `content`, and **`version`** (ISO timestamp). Use `version` as `ifMatchVersion` when calling **context_set** to update that node.
+- **context_set** when **updating** an existing node: you **must** pass **`ifMatchVersion`** equal to the `version` from the last **context_get** for that path. If the node was changed since (or you omit the version), the server returns an error so you re-read and merge instead of overwriting.
+- **context_set** when the path has a parent (e.g. `a/b/c`): you **must** pass **`parentSummary`** with the updated roll-up content for the immediate parent path (e.g. `a/b`). The server writes the node and the parent in one transaction so the parent roll-up is never forgotten.
+
+So: **read before update** (get → use `version` as `ifMatchVersion`), and **always send `parentSummary`** when setting a child path.
+
 ## GENERAL RULES
 
 1) Always list paths first  
